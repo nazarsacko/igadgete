@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>IGadget – Адмін-панель</title>
+<style>
+:root{--bg:#f1f5f8;--ink:#13222d;--mute:#52636f;--card:#fff;--line:#d5dee5;--tag:#ffc21a;--blue:#0b6e8a;--red:#c8321e;--ok:#1a7f37}
+@media (prefers-color-scheme:dark){:root{--bg:#101a21;--ink:#eaf1f5;--mute:#9fb1bd;--card:#18252e;--line:#2b3b46;--blue:#5cc3df;--ok:#4cc26b}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.45 "Segoe UI",Roboto,Helvetica,Arial,sans-serif}
+.wrap{max-width:1280px;margin:0 auto;padding:0 20px}
+header{background:#000;border-bottom:2px solid #27d3e0;color:#fff}
+header .wrap{display:flex;align-items:center;justify-content:space-between;height:64px;gap:12px}
+.logo{font:700 22px/1 Consolas,"SF Mono",Menlo,monospace}
+.logo small{font:600 13px "Segoe UI",sans-serif;color:#9fb1bd;margin-left:8px}
+button,input,select,textarea{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:3px solid var(--blue);outline-offset:2px}
+.btn{background:var(--card);border:1px solid var(--line);border-radius:8px;padding:8px 14px;font-weight:600;transition:transform .15s,border-color .2s}
+.btn:hover{border-color:var(--blue);transform:translateY(-1px)}
+.btn:active{transform:scale(.97)}
+.primary{background:var(--tag);color:#13222d;border-color:var(--tag)}
+.danger{color:var(--red)}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin:22px 0}
+.stat{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px 14px}
+.stat b{display:block;font-size:26px;letter-spacing:-.02em}
+.stat span{color:var(--mute);font-size:13px}
+.tabs{display:flex;gap:6px;border-bottom:1px solid var(--line);margin-bottom:16px;flex-wrap:wrap}
+.tabs button{border:0;background:none;padding:10px 14px;font-weight:600;color:var(--mute);border-bottom:3px solid transparent}
+.tabs button.on{color:var(--ink);border-color:var(--tag)}
+.bar{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-bottom:14px}
+.bar input[type=search],.bar select{background:var(--card);border:1px solid var(--line);border-radius:8px;padding:8px 12px}
+.bar .grow{flex:1;min-width:180px}
+.chk{display:flex;gap:6px;align-items:center}
+.tw{overflow-x:auto;background:var(--card);border:1px solid var(--line);border-radius:12px}
+table{border-collapse:collapse;width:100%;min-width:1100px}
+th,td{padding:6px 8px;border-bottom:1px solid var(--line);text-align:left;vertical-align:middle}
+th{font-size:12px;text-transform:uppercase;letter-spacing:.04em;color:var(--mute);position:sticky;top:0;background:var(--card);white-space:nowrap}
+td input,td select{width:100%;background:var(--bg);border:1px solid var(--line);border-radius:6px;padding:6px 8px;min-width:0}
+td input[type=number]{width:74px}
+td input[type=color]{width:42px;padding:2px;height:32px}
+td.n input{min-width:150px}
+td input[data-f=brand]{min-width:92px}
+td input[data-f=series]{min-width:110px}
+td input[data-f=mem]{min-width:92px}
+td select[data-f=cond]{min-width:135px}
+td.d input{min-width:240px}
+td.c input{min-width:300px}
+td.tot{font-weight:700;text-align:center}
+td.tot.zero{color:var(--red)}
+tr.new{animation:flash 1.2s}
+@keyframes flash{from{background:rgba(255,194,26,.35)}}
+.panel{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:18px;max-width:640px;margin-bottom:16px}
+.panel h3{margin:0 0 10px}
+.panel label{display:block;margin:10px 0 2px;font-weight:600}
+.panel input[type=text],.panel input[type=email]{width:100%;background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:9px}
+.panel p,.panel li{color:var(--mute)}
+.panel ol{padding-left:20px}
+.status{color:var(--ok);font-size:13px;min-width:90px;text-align:right}
+[hidden]{display:none!important}
+@media (prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<header><div class="wrap"><div class="logo">IGadget<small>Адмін-панель</small></div><div style="display:flex;gap:10px;align-items:center"><span class="status" id="status"></span><button class="btn primary" id="export">Завантажити data.js</button></div></div></header>
+
+<main class="wrap">
+<div class="stats" id="stats"></div>
+<nav class="tabs"><button class="on" data-t="phones">Телефони</button><button data-t="shops">Магазини і контакти</button><button data-t="help">Як опублікувати зміни</button></nav>
+
+<section id="t-phones">
+<div class="bar">
+<input type="search" id="q" class="grow" placeholder="Пошук за назвою або брендом…" aria-label="Пошук">
+<select id="fshop" aria-label="Магазин"></select>
+<label class="chk"><input type="checkbox" id="low"> Лише ті, що закінчуються (0–1 шт.)</label>
+<button class="btn primary" id="add">+ Додати телефон</button>
+</div>
+<div class="tw"><table id="tbl"></table></div>
+</section>
+
+<section id="t-shops" hidden>
+<div class="panel"><h3>Назви магазинів</h3><div id="shopnames"></div></div>
+<div class="panel"><h3>Контакти для замовлень</h3>
+<label for="mail">E-mail</label><input type="email" id="mail">
+<label for="wa">WhatsApp (з кодом країни, без + і без 0)</label><input type="text" id="wa">
+<label class="chk" style="margin-top:14px"><input type="checkbox" id="photos"> На сайті є фото в папці images</label>
+</div>
+<div class="panel"><h3>Резервна копія</h3>
+<p>Завантажте збережений файл data.js, щоб продовжити роботу з ним, або скиньте все до початкових даних.</p>
+<input type="file" id="imp" accept=".js,.txt" hidden>
+<button class="btn" id="impbtn">Завантажити data.js з комп’ютера</button>
+<button class="btn danger" id="reset">Скинути до початкових</button>
+</div>
+</section>
+
+<section id="t-help" hidden>
+<div class="panel"><h3>Як зміни потрапляють на сайт</h3>
+<ol>
+<li>Змініть телефони, ціни, кількість, кольори, пам’ять або описи в цій панелі. Зміни зберігаються автоматично в цьому браузері.</li>
+<li>Натисніть <b>«Завантажити data.js»</b> угорі. Файл збережеться на комп’ютері.</li>
+<li>Відкрийте свій репозиторій на GitHub, натисніть <b>Add file → Upload files</b> і перетягніть туди <b>data.js</b>. Якщо файл уже є, він замінюється.</li>
+<li>Натисніть <b>Commit changes</b>. Через 1–3 хвилини зміни з’являться на сайті.</li>
+</ol>
+<p>Важливо: ця панель сама нічого не змінює на сайті. Зміни видно клієнтам лише після завантаження data.js на GitHub. Тому сторонні особи не можуть нічого змінити, навіть якщо відкриють цю сторінку.</p>
+<p>Відкривайте панель завжди в одному й тому самому місці (наприклад, файл admin.html на комп’ютері), бо збережені дані прив’язані до браузера й адреси.</p>
+</div>
+</section>
+</main>
+
+<script>
+var DEFAULTS={"shops":["IGadget 1","Vodafon","Life","IGadget 2"],"products":[["iPhone 18 Pro","Apple",65000,0,"256 ГБ","Новий","#1d3a5f","iPhone 18",[1,0,2,4]],["iPhone 18 Pro Max","Apple",70000,0,"256 ГБ","Новий","#1d3a5f","iPhone 18",[0,0,5,3]],["iPhone 17e","Apple",30000,0,"256 ГБ","Новий","#3f6a8f","iPhone 17",[0,1,3,0]],["iPhone 17","Apple",45000,0,"256 ГБ","Новий","#3f6a8f","iPhone 17",[3,0,0,0]],["iPhone Air","Apple",55000,57400,"256 ГБ","Новий","#3f6a8f","iPhone 17",[2,2,0,0]],["iPhone 17 Pro","Apple",60000,0,"256 ГБ","Новий","#3f6a8f","iPhone 17",[0,3,2,0]],["iPhone 17 Pro Max","Apple",65000,67400,"256 ГБ","Новий","#3f6a8f","iPhone 17",[5,3,0,0]],["iPhone 16e","Apple",30000,0,"128 ГБ","Новий","#2f7d6d","iPhone 16",[4,4,3,0]],["iPhone 16","Apple",35000,37400,"128 ГБ","Новий","#2f7d6d","iPhone 16",[3,3,2,0]],["iPhone 16 Plus","Apple",40000,0,"128 ГБ","Новий","#2f7d6d","iPhone 16",[0,0,3,5]],["iPhone 16 Pro","Apple",45000,47400,"128 ГБ","Новий","#2f7d6d","iPhone 16",[0,1,2,0]],["iPhone 16 Pro Max","Apple",52400,0,"256 ГБ","Новий","#2f7d6d","iPhone 16",[3,0,3,1]],["iPhone 15","Apple",25000,0,"128 ГБ","Відновлений","#7a5c3b","iPhone 15",[3,5,4,0]],["iPhone 15 Plus","Apple",27400,0,"128 ГБ","Відновлений","#7a5c3b","iPhone 15",[0,3,3,4]],["iPhone 15 Pro","Apple",34000,36400,"128 ГБ","Відновлений","#7a5c3b","iPhone 15",[0,1,0,3]],["iPhone 15 Pro Max","Apple",39000,0,"256 ГБ","Відновлений","#7a5c3b","iPhone 15",[4,0,3,0]],["iPhone 14","Apple",20000,0,"128 ГБ","Відновлений","#5a4a8c","iPhone 14",[3,0,2,4]],["iPhone 14 Plus","Apple",22400,25000,"128 ГБ","Відновлений","#5a4a8c","iPhone 14",[3,2,5,1]],["iPhone 14 Pro","Apple",27400,0,"128 ГБ","Відновлений","#5a4a8c","iPhone 14",[2,3,2,1]],["iPhone 14 Pro Max","Apple",31400,0,"128 ГБ","Відновлений","#5a4a8c","iPhone 14",[1,0,5,0]],["iPhone 13 mini","Apple",14400,0,"128 ГБ","Відновлений","#8a3b57","iPhone 13",[4,5,0,0]],["iPhone 13","Apple",16400,0,"128 ГБ","Відновлений","#8a3b57","iPhone 13",[3,1,3,2]],["iPhone 13 Pro","Apple",21400,24000,"128 ГБ","Відновлений","#8a3b57","iPhone 13",[1,4,2,1]],["iPhone 13 Pro Max","Apple",25000,0,"128 ГБ","Відновлений","#8a3b57","iPhone 13",[3,0,0,3]],["iPhone 12 mini","Apple",11400,0,"64 ГБ","Відновлений","#3b6ea5","iPhone 12",[2,0,5,1]],["iPhone 12","Apple",12400,0,"64 ГБ","Відновлений","#3b6ea5","iPhone 12",[0,2,2,0]],["iPhone 12 Pro","Apple",16400,0,"128 ГБ","Відновлений","#3b6ea5","iPhone 12",[4,0,5,3]],["iPhone 12 Pro Max","Apple",19000,21400,"128 ГБ","Відновлений","#3b6ea5","iPhone 12",[3,5,5,1]],["Galaxy A","Samsung",12400,15000,"128 ГБ","Новий","#1f6f8b","Android",[1,4,1,3]],["Galaxy S","Samsung",35000,42400,"256 ГБ","Новий","#3b4a9c","Android",[2,3,5,2]],["Redmi","Xiaomi",9000,0,"128 ГБ","Новий","#b5651d","Android",[0,5,0,1]],["Xiaomi 13T","Xiaomi",20000,24000,"256 ГБ","Новий","#5b5f97","Android",[2,4,4,0]],["Pixel","Google",22400,0,"128 ГБ","Новий","#3a7ca5","Android",[0,4,4,1]],["Pixel Pro","Google",30000,35000,"256 ГБ","Новий","#7a4e8c","Android",[4,3,4,5]]],"descriptions":{"iPhone 12 mini":"Найкомпактніший iPhone покоління 12 з OLED-екраном 5,4″, підтримкою 5G та MagSafe. Зручно лежить у руці.","iPhone 12":"Класичний iPhone з OLED-екраном 6,1″, 5G, MagSafe та двома камерами. Надійний вибір за доступну ціну.","iPhone 12 Pro":"Версія Pro з трьома камерами та сканером LiDAR для кращих фото в темряві.","iPhone 12 Pro Max":"Найбільший екран у поколінні 12 (6,7″) та найпотужніша камера серії. Для тих, хто багато знімає.","iPhone 13 mini":"Компактний iPhone з екраном 5,4″ та двома камерами. Автономність краща, ніж у 12 mini.","iPhone 13":"Покоління 13: триваліша робота від акумулятора, режим «Кіно» для відео та OLED-екран 6,1″.","iPhone 13 Pro":"Екран ProMotion 120 Гц для плавної прокрутки, три камери та режим «Кіно». Версія Pro для вимогливих.","iPhone 13 Pro Max":"Великий екран 6,7″ ProMotion і одна з найтриваліших автономностей серії. Максимум можливостей покоління 13.","iPhone 14":"Покоління 14: покращена камера, виявлення аварії й супутниковий SOS. Екран 6,1″ OLED.","iPhone 14 Plus":"Великий екран 6,7″ у версії без Pro та тривала робота без підзарядки.","iPhone 14 Pro":"Dynamic Island, головна камера 48 Мп, постійно увімкнений екран. Перші Pro з такими функціями.","iPhone 14 Pro Max":"Те саме, що й 14 Pro, але з найбільшим 6,7″ екраном і запасом автономності.","iPhone 15":"Dynamic Island, USB-C та головна камера 48 Мп у стандартній версії.","iPhone 15 Plus":"Великий екран 6,7″, USB-C та Dynamic Island. Довго тримає заряд.","iPhone 15 Pro":"Титановий корпус, кнопка дії та USB-C. Легший за попередніх Pro.","iPhone 15 Pro Max":"Найбільша модель 15 Pro з титановим корпусом і телеоб’єктивом з потужним зумом.","iPhone 16e":"Доступний iPhone нового покоління з USB-C та Face ID. Простий і швидкий телефон на кожен день.","iPhone 16":"Покоління 16 з кнопкою Camera Control для швидкої зйомки та Dynamic Island.","iPhone 16 Plus":"Великий екран 6,7″ і довга автономність разом із кнопкою Camera Control.","iPhone 16 Pro":"Більший екран, ніж у попередніх Pro, титановий корпус і кнопка Camera Control.","iPhone 16 Pro Max":"Найбільший екран серії та найкраща автономність. Для професійної зйомки та роботи.","iPhone 17e":"Доступна модель покоління 17 для щоденних справ: швидка, з гарним екраном і камерою.","iPhone 17":"Нове покоління 17: яскравіший екран та оновлені камери. Збалансований iPhone на кожен день.","iPhone Air":"Дуже тонкий і легкий iPhone з великим екраном. Для тих, хто цінує елегантний дизайн.","iPhone 17 Pro":"Версія Pro з трьома камерами та потужним процесором для фото, відео й складних завдань.","iPhone 17 Pro Max":"Найбільша й найпотужніша модель покоління 17 із найкращою автономністю.","iPhone 18 Pro":"Новинка вересня 2026 року. Топовий iPhone для вимогливих користувачів.","iPhone 18 Pro Max":"Новинка вересня 2026 року з найбільшим екраном серії.","Galaxy A":"Доступний смартфон Samsung для щоденних справ.","Galaxy S":"Флагман Samsung із потужною камерою та яскравим екраном.","Redmi":"Бюджетний смартфон Xiaomi з хорошим співвідношенням ціни та якості.","Xiaomi 13T":"Продуктивний смартфон Xiaomi з якісною камерою.","Pixel":"Смартфон Google з чистим Android та сильною камерою.","Pixel Pro":"Версія Pro: більше можливостей камери та яскравіший екран."},"shopMail":"info@example.de","whatsapp":"491701234567","usePhotos":false,"colors":{"iPhone 12 mini":[["Blue","#1e5f94"],["Purple","#d1cdda"],["Green","#aee1cd"],["(PRODUCT)RED","#bf0013"],["White","#f2f2f2"],["Black","#1f2020"]],"iPhone 12":[["Blue","#1e5f94"],["Purple","#d1cdda"],["Green","#aee1cd"],["(PRODUCT)RED","#bf0013"],["White","#f2f2f2"],["Black","#1f2020"]],"iPhone 12 Pro":[["Pacific Blue","#2d5f78"],["Gold","#e8d3b4"],["Silver","#e3e4e1"],["Graphite","#54524f"]],"iPhone 12 Pro Max":[["Pacific Blue","#2d5f78"],["Gold","#e8d3b4"],["Silver","#e3e4e1"],["Graphite","#54524f"]],"iPhone 13 mini":[["Blue","#276787"],["Pink","#f5cfd2"],["Green","#394c38"],["(PRODUCT)RED","#bf0013"],["Starlight","#f3eee6"],["Midnight","#232a31"]],"iPhone 13":[["Blue","#276787"],["Pink","#f5cfd2"],["Green","#394c38"],["(PRODUCT)RED","#bf0013"],["Starlight","#f3eee6"],["Midnight","#232a31"]],"iPhone 13 Pro":[["Sierra Blue","#9bb5ce"],["Alpine Green","#576856"],["Gold","#f0dcc0"],["Silver","#f1f2ed"],["Graphite","#54524f"]],"iPhone 13 Pro Max":[["Sierra Blue","#9bb5ce"],["Alpine Green","#576856"],["Gold","#f0dcc0"],["Silver","#f1f2ed"],["Graphite","#54524f"]],"iPhone 14":[["Blue","#a0b4c7"],["Purple","#d9cde3"],["Yellow","#f9e479"],["(PRODUCT)RED","#bf0013"],["Starlight","#f3eee6"],["Midnight","#232a31"]],"iPhone 14 Plus":[["Blue","#a0b4c7"],["Purple","#d9cde3"],["Yellow","#f9e479"],["(PRODUCT)RED","#bf0013"],["Starlight","#f3eee6"],["Midnight","#232a31"]],"iPhone 14 Pro":[["Deep Purple","#594f63"],["Gold","#f4e8ce"],["Silver","#f0f2f2"],["Space Black","#403e3d"]],"iPhone 14 Pro Max":[["Deep Purple","#594f63"],["Gold","#f4e8ce"],["Silver","#f0f2f2"],["Space Black","#403e3d"]],"iPhone 15":[["Blue","#d5dde0"],["Pink","#f1d9d9"],["Yellow","#eee9bd"],["Green","#cad4c5"],["Black","#3b3b3c"]],"iPhone 15 Plus":[["Blue","#d5dde0"],["Pink","#f1d9d9"],["Yellow","#eee9bd"],["Green","#cad4c5"],["Black","#3b3b3c"]],"iPhone 15 Pro":[["Blue Titanium","#3f4a57"],["Natural Titanium","#bfb8ae"],["White Titanium","#f2f1ed"],["Black Titanium","#3c3c3d"]],"iPhone 15 Pro Max":[["Blue Titanium","#3f4a57"],["Natural Titanium","#bfb8ae"],["White Titanium","#f2f1ed"],["Black Titanium","#3c3c3d"]],"iPhone 16":[["Ultramarine","#8fa5f2"],["Teal","#9bc3c4"],["Pink","#f1b6ca"],["White","#f2f2f2"],["Black","#3c3c3e"]],"iPhone 16 Plus":[["Ultramarine","#8fa5f2"],["Teal","#9bc3c4"],["Pink","#f1b6ca"],["White","#f2f2f2"],["Black","#3c3c3e"]],"iPhone 16 Pro":[["Desert Titanium","#bfa48f"],["Natural Titanium","#b6aca0"],["White Titanium","#e8e6e1"],["Black Titanium","#3c3c3d"]],"iPhone 16 Pro Max":[["Desert Titanium","#bfa48f"],["Natural Titanium","#b6aca0"],["White Titanium","#e8e6e1"],["Black Titanium","#3c3c3d"]],"iPhone 16e":[["White","#f5f5f5"],["Black","#2b2b2c"]],"iPhone 17e":[["Soft Pink","#f3c9d3"],["White","#f4f4f2"],["Black","#2b2b2d"]],"iPhone 17":[["Lavender","#cdbfe3"],["Mist Blue","#a7bfd6"],["Sage","#b0bd9f"],["White","#f4f4f2"],["Black","#2b2b2d"]],"iPhone Air":[["Sky Blue","#a9c9e5"],["Light Gold","#e5d4b3"],["Cloud White","#f3f3f1"],["Space Black","#2e2e30"]],"iPhone 17 Pro":[["Cosmic Orange","#e2742f"],["Deep Blue","#2b3f5e"],["Silver","#e6e6e4"]],"iPhone 17 Pro Max":[["Cosmic Orange","#e2742f"],["Deep Blue","#2b3f5e"],["Silver","#e6e6e4"]],"iPhone 18 Pro":[["Burgundy","#6d1f33"],["Glacier Blue","#a9c4dc"],["Silver","#e4e5e7"],["Deep Black","#1e1e20"]],"iPhone 18 Pro Max":[["Burgundy","#6d1f33"],["Glacier Blue","#a9c4dc"],["Silver","#e4e5e7"],["Deep Black","#1e1e20"]],"Galaxy A":[["Blue","#3a64a8"],["Silver","#d7d9db"],["Black","#1f1f21"]],"Galaxy S":[["Blue","#3a64a8"],["Silver","#d7d9db"],["Black","#1f1f21"]],"Redmi":[["Blue","#3a64a8"],["Silver","#d7d9db"],["Black","#1f1f21"]],"Xiaomi 13T":[["Blue","#3a64a8"],["Silver","#d7d9db"],["Black","#1f1f21"]],"Pixel":[["Blue","#3a64a8"],["Silver","#d7d9db"],["Black","#1f1f21"]],"Pixel Pro":[["Blue","#3a64a8"],["Silver","#d7d9db"],["Black","#1f1f21"]]},"storage":{"iPhone 12 mini":[["64 ГБ",0],["128 ГБ",2500],["256 ГБ",5000]],"iPhone 12":[["64 ГБ",0],["128 ГБ",2500],["256 ГБ",5000]],"iPhone 12 Pro":[["128 ГБ",0],["256 ГБ",3500],["512 ГБ",8500]],"iPhone 12 Pro Max":[["128 ГБ",0],["256 ГБ",3500],["512 ГБ",8500]],"iPhone 13 mini":[["128 ГБ",0],["256 ГБ",5000],["512 ГБ",12500]],"iPhone 13":[["128 ГБ",0],["256 ГБ",5000],["512 ГБ",12500]],"iPhone 14":[["128 ГБ",0],["256 ГБ",5000],["512 ГБ",12500]],"iPhone 14 Plus":[["128 ГБ",0],["256 ГБ",5000],["512 ГБ",12500]],"iPhone 15":[["128 ГБ",0],["256 ГБ",5000],["512 ГБ",12500]],"iPhone 15 Plus":[["128 ГБ",0],["256 ГБ",5000],["512 ГБ",12500]],"iPhone 16":[["128 ГБ",0],["256 ГБ",5000],["512 ГБ",12500]],"iPhone 16 Plus":[["128 ГБ",0],["256 ГБ",5000],["512 ГБ",12500]],"iPhone 16e":[["128 ГБ",0],["256 ГБ",5000],["512 ГБ",12500]],"iPhone 13 Pro":[["128 ГБ",0],["256 ГБ",5000],["512 ГБ",11500],["1 ТБ",19000]],"iPhone 13 Pro Max":[["128 ГБ",0],["256 ГБ",5000],["512 ГБ",11500],["1 ТБ",19000]],"iPhone 14 Pro":[["128 ГБ",0],["256 ГБ",5000],["512 ГБ",12500],["1 ТБ",22500]],"iPhone 14 Pro Max":[["128 ГБ",0],["256 ГБ",5000],["512 ГБ",12500],["1 ТБ",22500]],"iPhone 15 Pro":[["128 ГБ",0],["256 ГБ",5000],["512 ГБ",12500],["1 ТБ",22500]],"iPhone 16 Pro":[["128 ГБ",0],["256 ГБ",5000],["512 ГБ",12500],["1 ТБ",22500]],"iPhone 15 Pro Max":[["256 ГБ",0],["512 ГБ",7500],["1 ТБ",17500]],"iPhone 16 Pro Max":[["256 ГБ",0],["512 ГБ",7500],["1 ТБ",17500]],"iPhone 17e":[["256 ГБ",0],["512 ГБ",10000]],"iPhone 17":[["256 ГБ",0],["512 ГБ",12500]],"iPhone Air":[["256 ГБ",0],["512 ГБ",12500],["1 ТБ",25000]],"iPhone 17 Pro":[["256 ГБ",0],["512 ГБ",12500],["1 ТБ",25000]],"iPhone 17 Pro Max":[["256 ГБ",0],["512 ГБ",12500],["1 ТБ",25000],["2 ТБ",50000]],"iPhone 18 Pro":[["256 ГБ",0],["512 ГБ",10000],["1 ТБ",30000],["2 ТБ",60000]],"iPhone 18 Pro Max":[["256 ГБ",0],["512 ГБ",10000],["1 ТБ",30000],["2 ТБ",60000]],"Galaxy A":[["128 ГБ",0],["256 ГБ",2500]],"Redmi":[["128 ГБ",0],["256 ГБ",2500]],"Galaxy S":[["256 ГБ",0],["512 ГБ",5000]],"Xiaomi 13T":[["256 ГБ",0],["512 ГБ",5000]],"Pixel Pro":[["256 ГБ",0],["512 ГБ",5000]],"Pixel":[["128 ГБ",0],["256 ГБ",4000]]}};
+var KEY="igadget_admin_v2";
+var CONDS=["Новий","Відновлений"];
+function $(i){return document.getElementById(i)}
+function esc(s){return String(s).replace(/&/g,"&amp;").replace(/"/g,"&quot;").replace(/</g,"&lt;")}
+function parseCols(s){return String(s||"").split(",").map(function(x){var m=x.trim().match(/^(.+?)\s*:\s*(#[0-9a-fA-F]{6})$/);return m?[m[1],m[2]]:null}).filter(Boolean)}
+function parseSt(s){return String(s||"").split(",").map(function(x){var m=x.trim().match(/^(.+?)\s*:\s*(-?\d+(?:[.,]\d+)?)$/);return m?[m[1],+m[2].replace(",",".")]:null}).filter(Boolean)}
+function stStr(l){return l.map(function(c){return c[0]+":"+c[1]}).join(", ")}
+function colStr(l){return l.map(function(c){return c[0]+":"+c[1]}).join(", ")}
+function fromData(d){
+  return {shops:d.shops.slice(),shopMail:d.shopMail||"",whatsapp:d.whatsapp||"",usePhotos:!!d.usePhotos,
+    rows:d.products.map(function(p){return{name:p[0],brand:p[1],price:p[2],old:p[3],mem:p[4],cond:p[5],color:p[6],series:p[7],stock:(p[8]||[]).slice(),desc:(d.descriptions||{})[p[0]]||"",colors:colStr((d.colors||{})[p[0]]||[]),storage:stStr((d.storage||{})[p[0]]||[[p[4],0]])}})};
+}
+var S;
+try{S=JSON.parse(localStorage.getItem(KEY))}catch(e){S=null}
+if(!S||!S.rows||!S.shops)S=fromData(DEFAULTS);
+S.rows.forEach(function(r){while(r.stock.length<S.shops.length)r.stock.push(0);if(r.colors===undefined)r.colors=colStr((DEFAULTS.colors||{})[r.name]||[]);if(r.storage===undefined)r.storage=stStr((DEFAULTS.storage||{})[r.name]||[[r.mem,0]])});
+
+var saveTimer;
+function save(){
+  try{localStorage.setItem(KEY,JSON.stringify(S));$("status").textContent="Збережено ✓";clearTimeout(saveTimer);saveTimer=setTimeout(function(){$("status").textContent=""},1500)}
+  catch(e){$("status").textContent="Не вдалося зберегти"}
+}
+function tot(r){return r.stock.reduce(function(a,b){return a+(+b||0)},0)}
+
+function stats(){
+  var units=0,out=0,per=S.shops.map(function(){return 0});
+  S.rows.forEach(function(r){var t=tot(r);units+=t;if(!t)out++;r.stock.forEach(function(v,i){if(per[i]!==undefined)per[i]+=(+v||0)})});
+  $("stats").innerHTML='<div class="stat"><b>'+S.rows.length+'</b><span>моделей у каталозі</span></div>'+
+   '<div class="stat"><b>'+units+'</b><span>телефонів усього</span></div>'+
+   '<div class="stat"><b>'+out+'</b><span>немає в наявності</span></div>'+
+   S.shops.map(function(n,i){return '<div class="stat"><b>'+per[i]+'</b><span>'+esc(n)+'</span></div>'}).join("");
+}
+
+function fillShopSelect(){
+  $("fshop").innerHTML='<option value="">Усі магазини</option>'+S.shops.map(function(n,i){return '<option value="'+i+'">'+esc(n)+'</option>'}).join("");
+}
+
+function table(newIdx){
+  var q=$("q").value.trim().toLowerCase(),fs=$("fshop").value,low=$("low").checked;
+  var head='<thead><tr><th>Назва</th><th>Бренд</th><th>Серія</th><th>Стан</th><th>Пам’ять:доплата грн (через кому)</th><th>Ціна грн (перша пам’ять)</th><th>Стара грн</th><th>Кольори (назва:#код, через кому)</th>'+
+    S.shops.map(function(n){return '<th>'+esc(n)+'</th>'}).join("")+'<th>Разом</th><th>Короткий опис</th><th></th></tr></thead>';
+  var body=S.rows.map(function(r,i){
+    if(q&&(r.name+" "+r.brand).toLowerCase().indexOf(q)<0)return"";
+    if(fs!==""&&!(+r.stock[+fs]>0))return"";
+    if(low&&tot(r)>1)return"";
+    var t=tot(r);
+    return '<tr data-r="'+i+'"'+(i===newIdx?' class="new"':'')+'>'+
+     '<td class="n"><input data-f="name" value="'+esc(r.name)+'"></td>'+
+     '<td><input data-f="brand" value="'+esc(r.brand)+'" size="8"></td>'+
+     '<td><input data-f="series" value="'+esc(r.series)+'" size="10"></td>'+
+     '<td><select data-f="cond">'+CONDS.map(function(c){return '<option'+(c===r.cond?' selected':'')+'>'+c+'</option>'}).join("")+'</select></td>'+
+     '<td class="c"><input data-f="storage" value="'+esc(r.storage)+'" placeholder="128 ГБ:0, 256 ГБ:100"></td>'+
+     '<td><input type="number" min="0" data-f="price" value="'+esc(r.price)+'"></td>'+
+     '<td><input type="number" min="0" data-f="old" value="'+esc(r.old)+'" title="0 = без акції"></td>'+
+     '<td class="c"><input data-f="colors" value="'+esc(r.colors)+'" placeholder="Black:#2b2b2d, White:#f4f4f2"></td>'+
+     r.stock.slice(0,S.shops.length).map(function(v,k){return '<td><input type="number" min="0" data-s="'+k+'" value="'+esc(v)+'"></td>'}).join("")+
+     '<td class="tot'+(t?'':' zero')+'">'+t+'</td>'+
+     '<td class="d"><input data-f="desc" value="'+esc(r.desc)+'"></td>'+
+     '<td><button class="btn danger" data-del="'+i+'" title="Видалити" aria-label="Видалити">×</button></td></tr>';
+  }).join("");
+  $("tbl").innerHTML=head+'<tbody>'+(body||'<tr><td colspan="30">Нічого не знайдено.</td></tr>')+'</tbody>';
+}
+
+$("tbl").addEventListener("input",function(e){
+  var el=e.target,tr=el.closest("tr");if(!tr)return;
+  var r=S.rows[+tr.dataset.r];
+  if(el.dataset.f){var f=el.dataset.f,v=el.value;if(f==="price"||f==="old")v=Math.max(0,+v||0);r[f]=v}
+  else if(el.dataset.s!==undefined){r.stock[+el.dataset.s]=Math.max(0,parseInt(el.value,10)||0);var c=tr.querySelector(".tot"),t=tot(r);c.textContent=t;c.classList.toggle("zero",!t);stats()}
+  save();
+});
+$("tbl").addEventListener("click",function(e){
+  var b=e.target.closest("[data-del]");if(!b)return;
+  var r=S.rows[+b.dataset.del];
+  if(confirm("Видалити «"+r.name+"»?")){S.rows.splice(+b.dataset.del,1);save();stats();table()}
+});
+$("add").onclick=function(){
+  $("q").value="";$("fshop").value="";$("low").checked=false;
+  S.rows.unshift({name:"Новий телефон",brand:"Apple",price:0,old:0,mem:"128 ГБ",storage:"128 ГБ:0",cond:"Новий",color:"#3b6ea5",colors:"",series:"iPhone",stock:S.shops.map(function(){return 0}),desc:""});
+  save();stats();table(0);
+  var f=document.querySelector('#tbl tbody tr input[data-f="name"]');if(f){f.focus();f.select()}
+};
+["q","fshop","low"].forEach(function(id){$(id).addEventListener("input",function(){table()})});
+
+document.querySelectorAll(".tabs button").forEach(function(b){b.onclick=function(){
+  document.querySelectorAll(".tabs button").forEach(function(x){x.classList.toggle("on",x===b)});
+  ["phones","shops","help"].forEach(function(t){$("t-"+t).hidden=(t!==b.dataset.t)});
+}});
+
+function shopsUI(){
+  $("shopnames").innerHTML=S.shops.map(function(n,i){return '<label for="sn'+i+'">Магазин '+(i+1)+'</label><input type="text" id="sn'+i+'" data-sn="'+i+'" value="'+esc(n)+'">'}).join("");
+  $("mail").value=S.shopMail;$("wa").value=S.whatsapp;$("photos").checked=S.usePhotos;
+}
+$("shopnames").addEventListener("input",function(e){var i=e.target.dataset.sn;if(i===undefined)return;S.shops[+i]=e.target.value;save();stats();fillShopSelect();table()});
+$("mail").oninput=function(){S.shopMail=this.value;save()};
+$("wa").oninput=function(){S.whatsapp=this.value;save()};
+$("photos").onchange=function(){S.usePhotos=this.checked;save()};
+
+function build(){
+  var rows=S.rows.map(function(r){
+    var pc=parseCols(r.colors);return JSON.stringify([r.name,r.brand,Math.max(0,+r.price||0),Math.max(0,+r.old||0),(parseSt(r.storage)[0]||[r.mem])[0],r.cond,pc.length?pc[0][1]:r.color,r.series,r.stock.slice(0,S.shops.length).map(function(v){return Math.max(0,parseInt(v,10)||0)})]);
+  });
+  var desc={},colors={},storage={};S.rows.forEach(function(r){if(r.desc)desc[r.name]=r.desc;var pc=parseCols(r.colors);if(pc.length)colors[r.name]=pc;var ps=parseSt(r.storage);if(ps.length)storage[r.name]=ps});
+  return "// Створено в адмін-панелі IGadget\nwindow.IGADGET_DATA={\nshops:"+JSON.stringify(S.shops)+",\nshopMail:"+JSON.stringify(S.shopMail)+",\nwhatsapp:"+JSON.stringify(S.whatsapp)+",\nusePhotos:"+(S.usePhotos?"true":"false")+",\nproducts:[\n"+rows.join(",\n")+"\n],\ncolors:"+JSON.stringify(colors)+",\nstorage:"+JSON.stringify(storage)+",\ndescriptions:"+JSON.stringify(desc,null,1)+"\n};\n";
+}
+$("export").onclick=function(){
+  var blob=new Blob([build()],{type:"text/javascript"}),a=document.createElement("a");
+  a.href=URL.createObjectURL(blob);a.download="data.js";document.body.appendChild(a);a.click();a.remove();
+  setTimeout(function(){URL.revokeObjectURL(a.href)},1000);
+  $("status").textContent="Файл завантажено ✓";
+};
+$("impbtn").onclick=function(){$("imp").click()};
+$("imp").onchange=function(){
+  var f=this.files[0];if(!f)return;
+  var rd=new FileReader();
+  rd.onload=function(){
+    try{
+      var w={};new Function("window",rd.result)(w);
+      if(!w.IGADGET_DATA||!w.IGADGET_DATA.products)throw new Error("format");
+      S=fromData(w.IGADGET_DATA);S.rows.forEach(function(r){while(r.stock.length<S.shops.length)r.stock.push(0)});
+      save();init();alert("Дані завантажено.");
+    }catch(e){alert("Не вдалося прочитати файл. Потрібен файл data.js, створений цією панеллю.")}
+  };
+  rd.readAsText(f);this.value="";
+};
+$("reset").onclick=function(){
+  if(confirm("Скинути всі зміни до початкових даних?")){S=fromData(DEFAULTS);save();init()}
+};
+function init(){fillShopSelect();shopsUI();stats();table()}
+init();
+</script>
+</body>
+</html>
